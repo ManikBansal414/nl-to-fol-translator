@@ -1,0 +1,128 @@
+# Universal property (adjectival): all/every/each NOUN AUX ADJ
+- name: "all-noun-aux-adj"
+  pattern: ["all", "NOUN", "AUX", "ADJ"]
+  template: "forall x. (/NOUN(x) -> /ADJ(x))"
+
+- name: "every-noun-aux-adj"
+  pattern: ["every", "NOUN", "AUX", "ADJ"]
+  template: "forall x. (/NOUN(x) -> /ADJ(x))"
+
+- name: "each-noun-aux-adj"
+  pattern: ["each", "NOUN", "AUX", "ADJ"]
+  template: "forall x. (/NOUN(x) -> /ADJ(x))"
+
+# Existential property (adjectival): some/a/an NOUN AUX ADJ
+- name: "some-noun-aux-adj"
+  pattern: ["some", "NOUN", "AUX", "ADJ"]
+  template: "exists x. (/NOUN(x) & /ADJ(x))"
+
+- name: "few-noun-aux-adj"
+  pattern: ["few", "NOUN", "AUX", "ADJ"]
+  template: "exists x. (/NOUN(x) & /ADJ(x))"
+
+- name: "a-noun-aux-adj"
+  pattern: ["a", "NOUN", "AUX", "ADJ"]
+  template: "exists x. (/NOUN(x) & /ADJ(x))"
+
+- name: "an-noun-aux-adj"
+  pattern: ["an", "NOUN", "AUX", "ADJ"]
+  template: "exists x. (/NOUN(x) & /ADJ(x))"
+
+# Universal negative: no NOUN AUX ADJ
+- name: "no-noun-aux-adj"
+  pattern: ["no", "NOUN", "AUX", "ADJ"]
+  template: "forall x. (/NOUN(x) -> not /ADJ(x))"
+
+# Universal classification: ALL/EVERY/EACH NOUN AUX NOUN
+- name: "all-noun-aux-noun"
+  pattern: ["all", "NOUN", "AUX", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> /NOUN_2(x))"
+
+- name: "every-noun-aux-noun"
+  pattern: ["every", "NOUN", "AUX", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> /NOUN_2(x))"
+
+- name: "each-noun-aux-noun"
+  pattern: ["each", "NOUN", "AUX", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> /NOUN_2(x))"
+
+# Existential classification: SOME/A/AN NOUN AUX NOUN
+- name: "some-noun-aux-noun"
+  pattern: ["some", "NOUN", "AUX", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & /NOUN_2(x))"
+
+- name: "a-noun-aux-noun"
+  pattern: ["a", "NOUN", "AUX", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & /NOUN_2(x))"
+
+- name: "an-noun-aux-noun"
+  pattern: ["an", "NOUN", "AUX", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & /NOUN_2(x))"
+
+# Existential negative classification: SOME NOUN AUX NOT NOUN
+- name: "some-noun-not-noun"
+  pattern: ["some", "NOUN", "AUX", "not", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & not /NOUN_2(x))"
+
+# Existential negative: some NOUN AUX not ADJ
+- name: "some-noun-not-adj"
+  pattern: ["some", "NOUN", "AUX", "not", "ADJ"]
+  template: "exists x. (/NOUN(x) & not /ADJ(x))"
+
+- name: "few-noun-not-adj"
+  pattern: ["few", "NOUN", "AUX", "not", "ADJ"]
+  template: "exists x. (/NOUN(x) & not /ADJ(x))"
+
+# There is/are a NOUN
+- name: "there-is-a-noun"
+  pattern: ["there", "VERB", "DET", "NOUN"]
+  template: "exists x. (/NOUN(x))"
+
+# Proper noun is adjective: PROPN AUX ADJ
+- name: "propn-aux-adj"
+  pattern: ["PROPN", "AUX", "ADJ"]
+  template: "/ADJ(/PROPN)"
+
+# Proper noun is a noun: PROPN AUX (DET?) NOUN
+- name: "propn-aux-noun"
+  pattern: ["PROPN", "AUX", "DET?", "NOUN"]
+  template: "/NOUN(/PROPN)"
+
+# Common noun is adjective: NOUN AUX ADJ
+- name: "noun-aux-adj"
+  pattern: ["NOUN", "AUX", "ADJ"]
+  template: "/ADJ(/NOUN)"
+
+# Common noun is adjective (VERB copula variant): NOUN VERB ADJ
+- name: "noun-verb-adj"
+  pattern: ["NOUN", "VERB", "ADJ"]
+  template: "/ADJ(/NOUN)"
+
+# Simple transitive via dependency: Subject-Verb-Object
+- name: "dep-transitive-verb"
+  dependency:
+    verb: { pos: VERB, placeholder: "/V" }
+    subject: { pos: NOUN, dep: ["nsubj", "nsubjpass"], placeholder: "/SUBJ" }
+    object: { pos: NOUN, dep: ["obj", "dobj", "pobj", "dative"], placeholder: "/OBJ" }
+  template: "/V(/SUBJ, /OBJ)"
+
+# Intransitive via dependency: Subject-Verb
+- name: "dep-intransitive-verb"
+  dependency:
+    verb: { pos: VERB, placeholder: "/V" }
+    subject: { pos: NOUN, dep: ["nsubj", "nsubjpass"], placeholder: "/SUBJ" }
+  template: "/V(/SUBJ)"
+
+# Bare plural generalization: NOUN VERB
+- name: "bare-plural-verb"
+  pattern: ["NOUN", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
+
+- name: "no-noun-aux-noun"
+  pattern: ["no", "NOUN", "AUX", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> not /NOUN_2(x))"
+
+# Fallback pattern for two proper nouns with a verb
+- name: "propn-verb-propn"
+  pattern: ["PROPN", "VERB", "PROPN"]
+  template: "/VERB(/PROPN_1, /PROPN_2)"
