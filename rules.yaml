@@ -1,4 +1,4 @@
-# Universal property (adjectival): all/every/each NOUN AUX ADJ
+# Flattened rules copied from nl_to_fol/rules/base_rules.yaml
 - name: "all-noun-aux-adj"
   pattern: ["all", "NOUN", "AUX", "ADJ"]
   template: "forall x. (/NOUN(x) -> /ADJ(x))"
@@ -11,7 +11,6 @@
   pattern: ["each", "NOUN", "AUX", "ADJ"]
   template: "forall x. (/NOUN(x) -> /ADJ(x))"
 
-# Existential property (adjectival): some/a/an NOUN AUX ADJ
 - name: "some-noun-aux-adj"
   pattern: ["some", "NOUN", "AUX", "ADJ"]
   template: "exists x. (/NOUN(x) & /ADJ(x))"
@@ -28,12 +27,10 @@
   pattern: ["an", "NOUN", "AUX", "ADJ"]
   template: "exists x. (/NOUN(x) & /ADJ(x))"
 
-# Universal negative: no NOUN AUX ADJ
 - name: "no-noun-aux-adj"
   pattern: ["no", "NOUN", "AUX", "ADJ"]
   template: "forall x. (/NOUN(x) -> not /ADJ(x))"
 
-# Universal classification: ALL/EVERY/EACH NOUN AUX NOUN
 - name: "all-noun-aux-noun"
   pattern: ["all", "NOUN", "AUX", "NOUN"]
   template: "forall x. (/NOUN_1(x) -> /NOUN_2(x))"
@@ -46,7 +43,6 @@
   pattern: ["each", "NOUN", "AUX", "NOUN"]
   template: "forall x. (/NOUN_1(x) -> /NOUN_2(x))"
 
-# Existential classification: SOME/A/AN NOUN AUX NOUN
 - name: "some-noun-aux-noun"
   pattern: ["some", "NOUN", "AUX", "NOUN"]
   template: "exists x. (/NOUN_1(x) & /NOUN_2(x))"
@@ -59,12 +55,10 @@
   pattern: ["an", "NOUN", "AUX", "NOUN"]
   template: "exists x. (/NOUN_1(x) & /NOUN_2(x))"
 
-# Existential negative classification: SOME NOUN AUX NOT NOUN
 - name: "some-noun-not-noun"
   pattern: ["some", "NOUN", "AUX", "not", "NOUN"]
   template: "exists x. (/NOUN_1(x) & not /NOUN_2(x))"
 
-# Existential negative: some NOUN AUX not ADJ
 - name: "some-noun-not-adj"
   pattern: ["some", "NOUN", "AUX", "not", "ADJ"]
   template: "exists x. (/NOUN(x) & not /ADJ(x))"
@@ -73,32 +67,38 @@
   pattern: ["few", "NOUN", "AUX", "not", "ADJ"]
   template: "exists x. (/NOUN(x) & not /ADJ(x))"
 
-# There is/are a NOUN
 - name: "there-is-a-noun"
   pattern: ["there", "VERB", "DET", "NOUN"]
   template: "exists x. (/NOUN(x))"
 
-# Proper noun is adjective: PROPN AUX ADJ
 - name: "propn-aux-adj"
   pattern: ["PROPN", "AUX", "ADJ"]
   template: "/ADJ(/PROPN)"
 
-# Proper noun is a noun: PROPN AUX (DET?) NOUN
 - name: "propn-aux-noun"
   pattern: ["PROPN", "AUX", "DET?", "NOUN"]
   template: "/NOUN(/PROPN)"
 
-# Common noun is adjective: NOUN AUX ADJ
+- name: "propn-is-a-noun"
+  pattern: ["PROPN", "AUX", "DET", "NOUN"]
+  template: "/NOUN(/PROPN)"
+
+- name: "propn-is-noun"
+  pattern: ["PROPN", "AUX", "NOUN"]
+  template: "/NOUN(/PROPN)"
+
 - name: "noun-aux-adj"
   pattern: ["NOUN", "AUX", "ADJ"]
   template: "/ADJ(/NOUN)"
 
-# Common noun is adjective (VERB copula variant): NOUN VERB ADJ
+- name: "noun-aux-noun"
+  pattern: ["NOUN", "AUX", "DET?", "NOUN"]
+  template: "/NOUN_2(/NOUN_1)"
+
 - name: "noun-verb-adj"
   pattern: ["NOUN", "VERB", "ADJ"]
   template: "/ADJ(/NOUN)"
 
-# Simple transitive via dependency: Subject-Verb-Object
 - name: "dep-transitive-verb"
   dependency:
     verb: { pos: VERB, placeholder: "/V" }
@@ -106,14 +106,12 @@
     object: { pos: NOUN, dep: ["obj", "dobj", "pobj", "dative"], placeholder: "/OBJ" }
   template: "/V(/SUBJ, /OBJ)"
 
-# Intransitive via dependency: Subject-Verb
 - name: "dep-intransitive-verb"
   dependency:
     verb: { pos: VERB, placeholder: "/V" }
     subject: { pos: NOUN, dep: ["nsubj", "nsubjpass"], placeholder: "/SUBJ" }
   template: "/V(/SUBJ)"
 
-# Bare plural generalization: NOUN VERB
 - name: "bare-plural-verb"
   pattern: ["NOUN", "VERB"]
   template: "forall x. (/NOUN(x) -> /VERB(x))"
@@ -122,7 +120,6 @@
   pattern: ["no", "NOUN", "AUX", "NOUN"]
   template: "forall x. (/NOUN_1(x) -> not /NOUN_2(x))"
 
-# Fallback pattern for two proper nouns with a verb
 - name: "propn-verb-propn"
   pattern: ["PROPN", "VERB", "PROPN"]
   template: "/VERB(/PROPN_1, /PROPN_2)"

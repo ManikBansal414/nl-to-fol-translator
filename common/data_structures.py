@@ -1,6 +1,6 @@
-"""Core lightweight data structures used by matcher and templates."""
+"""Core lightweight data structures used by matcher and templates (common)."""
 from dataclasses import dataclass
-from typing import Iterable, List
+from typing import List
 
 
 @dataclass(frozen=True)
@@ -20,6 +20,7 @@ class TokenData:
             dep=token.dep_,
             index=token.i,
         )
+
 
 @dataclass
 class CapturedValue:

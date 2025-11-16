@@ -1,14 +1,4 @@
-"""Rule loader and matcher.
-
-Exposes:
-- load_rules(): read YAML rules and compile to internal form.
-- match_rules(doc): pick first matching compiled rule for a spaCy doc.
-- dependency_match()/try_match(): dependency and sequential strategies.
-
-Key types:
-- PatternElement, DependencySlot, CompiledRule: compiled rule pieces.
-- PlaceholderRegistry: allocates placeholders (/NOUN, /NOUN_2, ...).
-"""
+"""Rule loader and matcher (common)."""
 from __future__ import annotations
 
 from collections import defaultdict
@@ -18,10 +8,9 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import yaml
 
-from parser.data_structures import CapturedValue, TokenData
+from .data_structures import CapturedValue, TokenData
 
-
-RULE_PATH = Path(__file__).resolve().parent.parent / "rules" / "base_rules.yaml"
+RULE_PATH = Path(__file__).resolve().parent.parent / "rules.yaml"
 
 _CAPTURABLE = {"NOUN", "PROPN", "VERB", "ADJ", "ADV", "PRON"}
 _VERB_POS = {"VERB", "AUX"}
@@ -115,10 +104,6 @@ def load_rules(path: Path = RULE_PATH) -> List[CompiledRule]:
     return compiled
 
 
-# NOTE: RULES is initialized at the end of this module after all helpers
-# are defined to avoid NameError due to call-order during import.
-
-
 def match_rules(doc) -> Optional[Tuple[CompiledRule, Dict[str, CapturedValue]]]:
     tokens, token_lookup = _collect_tokens(doc)
     if not tokens:
@@ -148,6 +133,9 @@ def dependency_match(doc, rule: CompiledRule, token_lookup: Dict[int, TokenData]
     for token in doc:
         token_data = token_lookup.get(token.i)
         if token_data is None:
+            continue
+        # Avoid generating generic Be(subject) from copula in the intransitive rule
+        if rule.name == "dep-intransitive-verb" and token_data.lemma == "be":
             continue
         for verb_slot in verb_slots:
             if not _token_matches_base(token_data, verb_slot.base_type):
@@ -214,7 +202,6 @@ def _attempt_element_match(
         if token_idx >= len(tokens):
             return None
         token = tokens[token_idx]
-        # Literal tokens match by lemma OR surface text to handle copulas like "are"->"be".
         if token.lemma != element.value and token.text.lower() != (element.value or ""):
             return None
         return backtrack_fn(token_idx + 1, pattern_idx + 1, slots)
@@ -482,5 +469,4 @@ def _default_deps(role: str) -> Tuple[str, ...]:
     return _OBJECT_DEPS
 
 
-# Initialize rules after all helpers are defined
 RULES: List[CompiledRule] = load_rules()

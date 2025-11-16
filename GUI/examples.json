@@ -1,0 +1,243 @@
+{
+  "scenarios": [
+    {
+      "name": "Single Rule Application",
+      "add": [
+        "All humans are mortal.",
+        "Socrates is a human."
+      ],
+      "query": "Socrates is mortal.",
+      "expected": {
+        "fol_query": "Mortal(Socrates)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "from Human(Socrates) and rule Human(x) -> Mortal(x) derive Mortal(Socrates)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "fact available: Mortal(Socrates)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Two-Step Chain",
+      "add": [
+        "All cats are mammals.",
+        "All mammals are animals.",
+        "Mittens is a cat."
+      ],
+      "query": "Mittens is an animal.",
+      "expected": {
+        "fol_query": "Animal(Mittens)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "from Mammal(Mittens) and rule Mammal(x) -> Animal(x) derive Animal(Mittens)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "fact available: Animal(Mittens)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Conjunctive Antecedent",
+      "add": [
+        "All humans who are Greek are philosophers.",
+        "Socrates is a human.",
+        "Socrates is Greek."
+      ],
+      "query": "Socrates is a philosopher.",
+      "expected": {
+        "fol_query": "Philosopher(Socrates)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "from Greek(Socrates) & Human(Socrates) and rule",
+            "->",
+            "derive Philosopher(Socrates)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "fact available: Philosopher(Socrates)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Conjunctive Consequent (Animal)",
+      "add": [
+        "All birds are animals and living.",
+        "Tweety is a bird."
+      ],
+      "query": "Tweety is an animal.",
+      "expected": {
+        "fol_query": "Animal(Tweety)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "from Bird(Tweety) and rule Bird(x) -> Animal(x) & Living(x) derive Animal(Tweety)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "fact available: Animal(Tweety)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Conjunctive Consequent (Living)",
+      "add": [],
+      "query": "Tweety is living.",
+      "expected": {
+        "fol_query": "Living(Tweety)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "derive Living(Tweety)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "fact available: Living(Tweety)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Existential From Rule + Fact",
+      "add": [
+        "All abc are xyz.",
+        "a is abc."
+      ],
+      "query": "Some abc are xyz.",
+      "expected": {
+        "fol_query": "exists x. (Abc(x) & Xyz(x))",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness a: all required facts present.",
+            "premise: Abc(a)",
+            "derive Xyz(a)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness a found",
+            "fact available: Abc(a)",
+            "fact available: Xyz(a)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Existential Commutativity",
+      "add": [],
+      "query": "Some xyz are abc.",
+      "expected": {
+        "fol_query": "exists x. (Xyz(x) & Abc(x))",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness a: all required facts present."
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness a found"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pure Existential Addition",
+      "add": [
+        "Some cats are mammals."
+      ],
+      "query": "There exists a mammal.",
+      "expected": {
+        "fol_query": "exists x. Mammal(x)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness w1: all required facts present.",
+            "premise: Mammal(w1)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness w1 found",
+            "fact available: Mammal(w1)"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Universal Rule Membership",
+      "add": [
+        "All cats are mammals."
+      ],
+      "query": "All cats are mammals.",
+      "expected": {
+        "fol_query": "forall x. (Cat(x) -> Mammal(x))",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "rule present: forall x. (Cat(x) -> Mammal(x))"
+          ]
+        },
+        "backward": {
+          "entailed": false,
+          "trace_contains": [
+            "Unsupported query"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Mixed Derivation + Existential",
+      "add": [
+        "All parents are human.",
+        "Alex is a parent."
+      ],
+      "query": "There exists a human.",
+      "expected": {
+        "fol_query": "exists x. Human(x)",
+        "forward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness Alex: all required facts present.",
+            "derive Human(Alex)"
+          ]
+        },
+        "backward": {
+          "entailed": true,
+          "trace_contains": [
+            "witness Alex found",
+            "fact available: Human(Alex)"
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "Set KB Query Mode to 'both' to see forward and backward traces together.",
+    "Traces may differ slightly in spacing or conjunct order; match using substring 'contains'.",
+    "Prover examples (optional): use the Natural Deduction Prover panel for manual derivations."
+  ]
+}
