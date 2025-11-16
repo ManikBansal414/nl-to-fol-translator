@@ -1,20 +1,11 @@
-"""Template expansion and FOL formatting.
-
-Exposes:
-- apply_template(template, slots) -> TemplateResult
-- pretty_print_fol(expr): whitespace and punctuation normalization
-
-Key types:
-- TemplateResult: holds raw and pretty-printed strings.
-- TemplateRenderer: replaces placeholders (/NOUN, /VERB, /VAR) deterministically.
-"""
+"""Template expansion and FOL formatting (common)."""
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
-from parser.data_structures import CapturedValue
+from .data_structures import CapturedValue
 
 
 @dataclass
@@ -145,7 +136,8 @@ class TemplateRenderer:
         base = (capture.base_type or '').upper()
         parts: List[str] = []
         for token in capture.tokens:
-            if base == "PROPN":
+            # Prefer actual token POS or capitalization to decide proper-name formatting
+            if token.pos == "PROPN" or base == "PROPN" or (token.text[:1].isupper()):
                 parts.append(self._format_proper(token.text))
             else:
                 parts.append(self._format_symbol(token.lemma))
@@ -175,14 +167,8 @@ def apply_template(template: str, slots: Dict[str, CapturedValue]) -> TemplateRe
 
 def pretty_print_fol(expr: str) -> str:
     text = expr.strip()
-    replacements = {
-        "->": " -> ",
-        "&": " & ",
-        "|": " | ",
-        "=": " = ",
-    }
-    for key, value in replacements.items():
-        text = text.replace(key, value)
+    for op in ("->", "&", "|", "="):
+        text = text.replace(op, f" {op} ")
     text = re.sub(r"\s+", " ", text)
     text = re.sub(r"\( ", "(", text)
     text = re.sub(r" \)", ")", text)

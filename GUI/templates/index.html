@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NL → FOL Translator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>NL → FOL Translator</h1>
+    <form method="post" class="card">
+      <label for="sentence">Sentence</label>
+      <textarea id="sentence" name="sentence" rows="3" placeholder="Type a sentence..." required>{{ sentence }}</textarea>
+
+      <label for="method">Validation Method</label>
+      <select id="method" name="method">
+        {% for m in methods %}
+          <option value="{{ m }}" {% if selected_method == m %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="actions">
+        <button type="submit" name="action" value="validate">Translate & Validate</button>
+        <button type="submit" name="action" value="kb_add" class="secondary">Add to KB</button>
+        <div class="inline">
+          <label for="kb_mode" class="inline-label">KB Query Mode</label>
+          <select id="kb_mode" name="kb_mode">
+            <option value="forward">forward</option>
+            <option value="backward">backward</option>
+            <option value="both" selected>both</option>
+          </select>
+          <button type="submit" name="action" value="kb_query" class="secondary">Query KB</button>
+        </div>
+        <button type="submit" name="action" value="kb_clear" class="danger">Clear KB</button>
+      </div>
+    </form>
+
+    {% if data %}
+      <div class="card result">
+        <h2>Result</h2>
+        <p><strong>NL:</strong> {{ data.sentence }}</p>
+        {% if data.error %}
+          <p class="error">{{ data.error }}</p>
+        {% else %}
+          <p><strong>FOL:</strong> <code>{{ data.fol }}</code></p>
+          <div class="grid">
+            {% for name, ok in data.results.items() %}
+              <div class="pill {{ 'ok' if ok else 'fail' }}">
+                {{ name }}: {{ 'True' if ok else 'False' }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if kb_data %}
+      <div class="card result">
+        <h2>Knowledge Base</h2>
+        {% if kb_data.action == 'add' %}
+          <p><strong>Action:</strong> Add premise</p>
+          <p><strong>NL:</strong> {{ kb_data.sentence }}</p>
+          {% if kb_data.error %}
+            <p class="error">{{ kb_data.error }}</p>
+          {% else %}
+            <p><strong>FOL:</strong> <code>{{ kb_data.fol }}</code></p>
+            <p><strong>Status:</strong> {{ 'Added' if kb_data.ok else 'Not added' }}</p>
+            {% if kb_data.stored_other %}
+              <p class="muted">Stored in KB but not used for inference.</p>
+            {% endif %}
+          {% endif %}
+        {% elif kb_data.action == 'query' %}
+          <p><strong>Action:</strong> Query</p>
+          <p><strong>NL:</strong> {{ kb_data.sentence }}</p>
+          {% if kb_data.error %}
+            <p class="error">{{ kb_data.error }}</p>
+          {% else %}
+            <p><strong>FOL:</strong> <code>{{ kb_data.fol }}</code></p>
+            {% if kb_data.mode in ['forward','both'] %}
+              <h3>Forward</h3>
+              <p><strong>Entailed:</strong> {{ 'True' if kb_data.ok_forward else 'False' }}</p>
+              {% if kb_data.trace_forward %}
+                <pre class="trace">{{ '\n'.join(kb_data.trace_forward) }}</pre>
+              {% endif %}
+            {% endif %}
+            {% if kb_data.mode in ['backward','both'] %}
+              <h3>Backward</h3>
+              <p><strong>Entailed:</strong> {{ 'True' if kb_data.ok_backward else 'False' }}</p>
+              {% if kb_data.trace_backward %}
+                <pre class="trace">{{ '\n'.join(kb_data.trace_backward) }}</pre>
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% elif kb_data.action == 'clear' %}
+          <p><strong>Action:</strong> Clear</p>
+          <p>Knowledge base cleared.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <h2>KB State</h2>
+      <div class="columns">
+        <div>
+          <h3>Facts</h3>
+          {% if kb_state.facts %}
+            <ul>
+              {% for f in kb_state.facts %}
+                <li><code>{{ f }}</code></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">No facts yet.</p>
+          {% endif %}
+        </div>
+        <div>
+          <h3>Rules</h3>
+          {% if kb_state.rules %}
+            <ul>
+              {% for r in kb_state.rules %}
+                <li><code>{{ r }}</code></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">No rules yet.</p>
+          {% endif %}
+        </div>
+        <div>
+          <h3>Other Formulas</h3>
+          {% if kb_state.other %}
+            <ul>
+              {% for o in kb_state.other %}
+                <li><code>{{ o }}</code></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">None.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Natural Deduction Prover</h2>
+      <form method="post">
+        <input type="hidden" name="action" value="proof_run" />
+        <label for="premises">Premises (one per line)</label>
+        <textarea id="premises" name="premises" rows="4" placeholder="forall x. (Human(x) -> Mortal(x))\nHuman(Socrate)"></textarea>
+        <label for="commands">Commands (one per line)</label>
+        <textarea id="commands" name="commands" rows="6" placeholder="R 1\nAE 0 Socrates\n>E 2 3\nFinish"></textarea>
+        <button type="submit" class="secondary">Run Proof</button>
+      </form>
+      {% if proof_result %}
+        {% if proof_result.ok %}
+          <p><strong>Proof Status:</strong> OK</p>
+          <pre class="trace">{{ '\n'.join(proof_result.lines) }}</pre>
+        {% else %}
+          <p class="error"><strong>Error:</strong> {{ proof_result.error }}</p>
+          {% if proof_result.lines %}
+            <pre class="trace">{{ '\n'.join(proof_result.lines) }}</pre>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <footer>
+      <p>Use spaCy en_core_web_sm. Methods: lark, nltk, fomaster, or all. KB supports unary facts and forall-implication rules.</p>
+    </footer>
+  </div>
+</body>
+</html>
