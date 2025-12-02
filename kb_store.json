@@ -1,10 +1,9 @@
 {
   "facts": [
-    "Human(Socrates)"
+    "Friend(Socrates)"
   ],
-  "rules_adv": [],
-  "other_formulas": [
-    "(exists x. (Vehicle(x) & not Car(x)) -> forall x. (Car(x) -> Vehicle(x)))",
-    "forall x. (Human(x) -> Mortal(x) | Wise(x))"
-  ]
+  "rules": [
+    "forall x. (Friend(x) -> Toxic(x))"
+  ],
+  "other_formulas": []
 }

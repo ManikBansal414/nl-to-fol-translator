@@ -1,4 +1,3 @@
-# Flattened rules copied from nl_to_fol/rules/base_rules.yaml
 - name: "all-noun-aux-adj"
   pattern: ["all", "NOUN", "AUX", "ADJ"]
   template: "forall x. (/NOUN(x) -> /ADJ(x))"
@@ -103,7 +102,8 @@
   dependency:
     verb: { pos: VERB, placeholder: "/V" }
     subject: { pos: NOUN, dep: ["nsubj", "nsubjpass"], placeholder: "/SUBJ" }
-    object: { pos: NOUN, dep: ["obj", "dobj", "pobj", "dative"], placeholder: "/OBJ" }
+    object:
+      { pos: NOUN, dep: ["obj", "dobj", "pobj", "dative"], placeholder: "/OBJ" }
   template: "/V(/SUBJ, /OBJ)"
 
 - name: "dep-intransitive-verb"
@@ -123,3 +123,47 @@
 - name: "propn-verb-propn"
   pattern: ["PROPN", "VERB", "PROPN"]
   template: "/VERB(/PROPN_1, /PROPN_2)"
+
+# ==========================================
+# PHASE 1 EXPANSION: Relative Clauses
+# ==========================================
+
+- name: "every-noun-who-aux-adj-aux-adj"
+  pattern: ["every", "NOUN", "who", "AUX", "ADJ", "AUX", "ADJ"]
+  template: "forall x. ((/NOUN(x) & /ADJ_1(x)) -> /ADJ_2(x))"
+
+- name: "a-noun-who-verb-verb"
+  pattern: ["a", "NOUN", "who", "VERB", "VERB"]
+  template: "exists x. (/NOUN(x) & /VERB_1(x) & /VERB_2(x))"
+
+- name: "all-noun-who-aux-adj-aux-noun"
+  pattern: ["all", "NOUN", "who", "AUX", "ADJ", "AUX", "NOUN"]
+  template: "forall x. ((/NOUN_1(x) & /ADJ(x)) -> /NOUN_2(x))"
+
+# ==========================================
+# PHASE 1 EXPANSION: Complex Quantification
+# ==========================================
+
+- name: "every-noun-verb-a-noun"
+  pattern: ["every", "NOUN", "VERB", "a", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "all-noun-verb-some-noun"
+  pattern: ["all", "NOUN", "VERB", "some", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "every-noun-verb-at-least-one-noun"
+  pattern: ["every", "NOUN", "VERB", "at", "least", "one", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+# ==========================================
+# PHASE 1 EXPANSION: Negation & Conjunction
+# ==========================================
+
+- name: "no-noun-aux-both-adj-and-adj"
+  pattern: ["no", "NOUN", "AUX", "both", "ADJ", "and", "ADJ"]
+  template: "forall x. (/NOUN(x) -> not (/ADJ_1(x) & /ADJ_2(x)))"
+
+- name: "it-is-not-case-that-all-noun-verb"
+  pattern: ["it", "is", "not", "the", "case", "that", "all", "NOUN", "VERB"]
+  template: "not (forall x. (/NOUN(x) -> /VERB(x)))"

@@ -2,3 +2,7 @@ spacy==3.7.2
 pyyaml
 lark
 nltk
+openai>=1.40.0
+google-generativeai>=0.7.0
+python-dotenv>=1.0.1
+tqdm>=4.66.1
