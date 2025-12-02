@@ -10,6 +10,7 @@ from method_fomaster.validator import validate as validate_fomaster
 from method_lark.validator import validate as validate_lark
 from method_nltk.validator import validate as validate_nltk
 
+from .fol_analysis import evaluate_parsing_pair
 from .metrics import aggregate_translation_rows
 from .registry import get_dataset_loader
 
@@ -20,7 +21,7 @@ VALIDATORS = {
 }
 
 
-def translate_and_validate(text: str) -> Dict[str, object]:
+def translate_and_validate(text: str, gold_fol: str | None = None) -> Dict[str, object]:
     """Translate a sentence and run secondary validators."""
     text = text.strip()
     if not text:
@@ -28,11 +29,12 @@ def translate_and_validate(text: str) -> Dict[str, object]:
             "translation": None,
             "error": "[ERROR] Empty sentence",
             "validators": {},
+            "parsing_metrics": None,
         }
 
     fol = translate_sentence(text)
     if fol.startswith("[ERROR]"):
-        return {"translation": None, "error": fol, "validators": {}}
+        return {"translation": None, "error": fol, "validators": {}, "parsing_metrics": None}
 
     validators: Dict[str, bool] = {}
     for name, fn in VALIDATORS.items():
@@ -41,7 +43,14 @@ def translate_and_validate(text: str) -> Dict[str, object]:
         except Exception:
             validators[name] = False
 
-    return {"translation": fol, "error": None, "validators": validators}
+    parsing_metrics = None
+    if gold_fol:
+        try:
+            parsing_metrics = evaluate_parsing_pair(fol, gold_fol)
+        except Exception:
+            parsing_metrics = None
+
+    return {"translation": fol, "error": None, "validators": validators, "parsing_metrics": parsing_metrics}
 
 
 def run(dataset: str, split: str, limit: int | None) -> List[Dict[str, object]]:
@@ -51,7 +60,7 @@ def run(dataset: str, split: str, limit: int | None) -> List[Dict[str, object]]:
         if limit is not None and idx >= limit:
             break
         for sentence in example.sentences:
-            outcome = translate_and_validate(sentence["text"])
+            outcome = translate_and_validate(sentence["text"], gold_fol=sentence.get("gold_fol"))
             rows.append(
                 {
                     "story_id": example.story_id,
@@ -60,6 +69,7 @@ def run(dataset: str, split: str, limit: int | None) -> List[Dict[str, object]]:
                     "sentence_type": sentence["type"],
                     "sentence_index": sentence["index"],
                     "sentence": sentence["text"],
+                    "gold_fol": sentence.get("gold_fol"),
                     **outcome,
                 }
             )

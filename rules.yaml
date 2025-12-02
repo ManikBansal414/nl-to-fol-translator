@@ -98,6 +98,54 @@
   pattern: ["NOUN", "VERB", "ADJ"]
   template: "/ADJ(/NOUN)"
 
+- name: "all-noun-verb"
+  pattern: ["all", "NOUN", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
+
+- name: "every-noun-verb"
+  pattern: ["every", "NOUN", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
+
+- name: "each-noun-verb"
+  pattern: ["each", "NOUN", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
+
+- name: "all-noun-verb-noun"
+  pattern: ["all", "NOUN", "VERB", "DET?", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "every-noun-verb-noun"
+  pattern: ["every", "NOUN", "VERB", "DET?", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "each-noun-verb-noun"
+  pattern: ["each", "NOUN", "VERB", "DET?", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "some-noun-verb"
+  pattern: ["some", "NOUN", "VERB"]
+  template: "exists x. (/NOUN(x) & /VERB(x))"
+
+- name: "some-noun-verb-noun"
+  pattern: ["some", "NOUN", "VERB", "DET?", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & exists y. (/NOUN_2(y) & /VERB(x, y)))"
+
+- name: "no-noun-verb"
+  pattern: ["no", "NOUN", "VERB"]
+  template: "forall x. (/NOUN(x) -> not /VERB(x))"
+
+- name: "no-noun-verb-noun"
+  pattern: ["no", "NOUN", "VERB", "DET?", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> not /VERB(x, /NOUN_2))"
+
+- name: "noun-verb-noun"
+  pattern: ["NOUN", "VERB", "DET?", "NOUN"]
+  template: "exists x. exists y. (/NOUN_1(x) & /NOUN_2(y) & /VERB(x, y))"
+
+- name: "propn-verb-noun"
+  pattern: ["PROPN", "VERB", "DET?", "NOUN"]
+  template: "/VERB(/PROPN, /NOUN)"
+
 - name: "dep-transitive-verb"
   dependency:
     verb: { pos: VERB, placeholder: "/V" }
