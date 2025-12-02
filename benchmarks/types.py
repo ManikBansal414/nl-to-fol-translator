@@ -25,9 +25,11 @@ class BenchmarkExample:
                 "type": "premise",
                 "index": idx,
                 "text": text.strip(),
+                "gold_fol": (self.premises_fol[idx] if self.premises_fol and idx < len(self.premises_fol) else None),
             }
         yield {
             "type": "conclusion",
             "index": 0,
             "text": self.conclusion_nl.strip(),
+            "gold_fol": self.conclusion_fol,
         }

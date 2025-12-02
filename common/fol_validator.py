@@ -1,5 +1,5 @@
 """FOL syntax validator using a small Lark grammar (common)."""
-from lark import Lark
+from lark import Lark, Tree
 
 grammar = r"""
 ?start: expr
@@ -29,3 +29,8 @@ def validate_fol(text: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def parse_fol(text: str) -> Tree:
+    """Parse FOL text and return the Lark parse tree (raises on failure)."""
+    return _parser.parse(text)
