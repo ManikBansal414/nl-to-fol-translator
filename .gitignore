@@ -1,4 +1,7 @@
 /.specstory
 /.venv
 /__pycache__
-/*/__pycache__
+/**/__pycache__
+/**/**/__pycache__
+.env.local
+.cache/*
