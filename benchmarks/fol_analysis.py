@@ -8,7 +8,7 @@ from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
 from zss import Node, simple_distance
 from lark import Tree, Token
 
-from common.fol_validator import parse_fol
+from translator import parse_fol
 
 VAR_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 NAME_RE = re.compile(r"^[A-Z][A-Za-z0-9_]*$")
@@ -67,7 +67,9 @@ def extract_predicates(text: str) -> Set[Tuple[str, Tuple[str, ...]]]:
     for subtree in tree.iter_subtrees():
         if isinstance(subtree, Tree) and getattr(subtree, "data", None) == "predicate":
             name_token = subtree.children[0]
-            name = name_token.value if isinstance(name_token, Token) else str(name_token)
+            name = (
+                name_token.value if isinstance(name_token, Token) else str(name_token)
+            )
             args: List[str] = []
             if len(subtree.children) > 1:
                 arg_node = subtree.children[1]
@@ -104,7 +106,9 @@ def bleu_score(predicted: str, gold: str) -> float:
         return 0.0
     smoothie = SmoothingFunction().method1
     try:
-        return float(sentence_bleu([gold_tokens], pred_tokens, smoothing_function=smoothie))
+        return float(
+            sentence_bleu([gold_tokens], pred_tokens, smoothing_function=smoothie)
+        )
     except ZeroDivisionError:
         return 0.0
 

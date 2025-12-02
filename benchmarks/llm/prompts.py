@@ -34,6 +34,15 @@ def build_translation_prompt(premises: List[str], conclusion: str) -> Tuple[str,
     return "\n".join(lines), TRANSLATION_SYSTEM_PROMPT
 
 
+def build_sentence_translation_prompt(sentence: str) -> Tuple[str, str]:
+    lines = [
+        "Convert the following sentence into first-order logic (FOL):",
+        sentence.strip(),
+        'Return JSON: {"fol": "..."}',
+    ]
+    return "\n".join(lines), TRANSLATION_SYSTEM_PROMPT
+
+
 def build_entailment_prompt(
     premises: List[str],
     conclusion: str,

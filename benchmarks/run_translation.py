@@ -5,13 +5,13 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
-from common.translator import translate_sentence
+from translator import translate_sentence
 from method_fomaster.validator import validate as validate_fomaster
 from method_lark.validator import validate as validate_lark
 from method_nltk.validator import validate as validate_nltk
 
 from .fol_analysis import evaluate_parsing_pair
-from .metrics import aggregate_translation_rows
+from .metrics import aggregate_example_rows, aggregate_translation_rows
 from .registry import get_dataset_loader
 
 VALIDATORS = {
@@ -34,7 +34,12 @@ def translate_and_validate(text: str, gold_fol: str | None = None) -> Dict[str, 
 
     fol = translate_sentence(text)
     if fol.startswith("[ERROR]"):
-        return {"translation": None, "error": fol, "validators": {}, "parsing_metrics": None}
+        return {
+            "translation": None,
+            "error": fol,
+            "validators": {},
+            "parsing_metrics": None,
+        }
 
     validators: Dict[str, bool] = {}
     for name, fn in VALIDATORS.items():
@@ -50,29 +55,57 @@ def translate_and_validate(text: str, gold_fol: str | None = None) -> Dict[str, 
         except Exception:
             parsing_metrics = None
 
-    return {"translation": fol, "error": None, "validators": validators, "parsing_metrics": parsing_metrics}
+    return {
+        "translation": fol,
+        "error": None,
+        "validators": validators,
+        "parsing_metrics": parsing_metrics,
+    }
 
 
-def run(dataset: str, split: str, limit: int | None) -> List[Dict[str, object]]:
+def _translate_sentences(example) -> List[Dict[str, object]]:
+    sentence_rows: List[Dict[str, object]] = []
+    for sentence in example.sentences:
+        outcome = translate_and_validate(
+            sentence["text"], gold_fol=sentence.get("gold_fol")
+        )
+        sentence_rows.append(
+            {
+                "story_id": example.story_id,
+                "example_id": example.example_id,
+                "label": example.label,
+                "sentence_type": sentence["type"],
+                "sentence_index": sentence["index"],
+                "sentence": sentence["text"],
+                "gold_fol": sentence.get("gold_fol"),
+                **outcome,
+            }
+        )
+    return sentence_rows
+
+
+def _translate_example(example) -> Dict[str, object]:
+    sentences = _translate_sentences(example)
+    return {
+        "story_id": example.story_id,
+        "example_id": example.example_id,
+        "label": example.label,
+        "sentences": sentences,
+    }
+
+
+def run(
+    dataset: str, split: str, limit: int | None, unit: str = "sentence"
+) -> List[Dict[str, object]]:
     loader = get_dataset_loader(dataset)
     rows: List[Dict[str, object]] = []
     for idx, example in enumerate(loader.iter_examples(split)):
         if limit is not None and idx >= limit:
             break
-        for sentence in example.sentences:
-            outcome = translate_and_validate(sentence["text"], gold_fol=sentence.get("gold_fol"))
-            rows.append(
-                {
-                    "story_id": example.story_id,
-                    "example_id": example.example_id,
-                    "label": example.label,
-                    "sentence_type": sentence["type"],
-                    "sentence_index": sentence["index"],
-                    "sentence": sentence["text"],
-                    "gold_fol": sentence.get("gold_fol"),
-                    **outcome,
-                }
-            )
+        if unit == "example":
+            rows.append(_translate_example(example))
+        else:
+            rows.extend(_translate_sentences(example))
     return rows
 
 
@@ -102,6 +135,12 @@ def parse_args() -> argparse.Namespace:
         help="Dataset split to evaluate (default: validation)",
     )
     parser.add_argument(
+        "--unit",
+        choices=["sentence", "example"],
+        default="sentence",
+        help="Granularity for outputs (default: sentence)",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -124,10 +163,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    rows = run(dataset=args.dataset, split=args.split, limit=args.limit)
-    summary = aggregate_translation_rows(rows)
+    rows = run(dataset=args.dataset, split=args.split, limit=args.limit, unit=args.unit)
+    if args.unit == "example":
+        summary = aggregate_example_rows(rows)
+    else:
+        summary = aggregate_translation_rows(rows)
 
     print(f"Dataset: {args.dataset} | Split: {args.split}")
+    if args.unit == "example":
+        print(f"Examples processed: {summary.get('total_examples', len(rows))}")
     print(f"Sentences processed: {summary['total_sentences']}")
     print(f"Successful translations: {summary['translations']}")
     print(f"Success rate: {summary['translation_rate']:.2%}")

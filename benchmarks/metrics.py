@@ -41,6 +41,16 @@ def aggregate_translation_rows(rows: Iterable[Dict[str, object]]) -> Dict[str, o
     return summary
 
 
+def aggregate_example_rows(rows: Iterable[Dict[str, object]]) -> Dict[str, object]:
+    rows_list: List[Dict[str, object]] = list(rows)
+    sentence_rows: List[Dict[str, object]] = []
+    for row in rows_list:
+        sentence_rows.extend(row.get("sentences") or [])
+    summary = aggregate_translation_rows(sentence_rows)
+    summary["total_examples"] = len(rows_list)
+    return summary
+
+
 def aggregate_entailment_rows(rows: Iterable[Dict[str, object]]) -> Dict[str, object]:
     rows_list: List[Dict[str, object]] = list(rows)
     total = len(rows_list)
