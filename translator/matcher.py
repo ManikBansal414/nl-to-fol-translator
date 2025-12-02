@@ -1,4 +1,5 @@
 """Rule loader and matcher (common)."""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -10,7 +11,7 @@ import yaml
 
 from .data_structures import CapturedValue, TokenData
 
-RULE_PATH = Path(__file__).resolve().parent.parent / "rules.yaml"
+RULE_PATH = Path(__file__).resolve().parent / "rules.yaml"
 
 _CAPTURABLE = {"NOUN", "PROPN", "VERB", "ADJ", "ADV", "PRON"}
 _VERB_POS = {"VERB", "AUX"}
@@ -56,7 +57,9 @@ class PlaceholderRegistry:
         self.counts: Dict[str, int] = defaultdict(int)
         self.primary_alias: Dict[str, str] = {}
 
-    def assign(self, base_type: str, explicit: Optional[str] = None) -> Tuple[str, List[str]]:
+    def assign(
+        self, base_type: str, explicit: Optional[str] = None
+    ) -> Tuple[str, List[str]]:
         base = base_type.upper()
         aliases: List[str] = []
 
@@ -122,7 +125,9 @@ def match_rules(doc) -> Optional[Tuple[CompiledRule, Dict[str, CapturedValue]]]:
     return None
 
 
-def dependency_match(doc, rule: CompiledRule, token_lookup: Dict[int, TokenData]) -> Optional[Dict[str, CapturedValue]]:
+def dependency_match(
+    doc, rule: CompiledRule, token_lookup: Dict[int, TokenData]
+) -> Optional[Dict[str, CapturedValue]]:
     if not rule.dependency:
         return None
 
@@ -141,11 +146,15 @@ def dependency_match(doc, rule: CompiledRule, token_lookup: Dict[int, TokenData]
             if not _token_matches_base(token_data, verb_slot.base_type):
                 continue
             base_slots: Dict[str, CapturedValue] = {}
-            capture = CapturedValue(verb_slot.placeholder, verb_slot.base_type, [token_data])
+            capture = CapturedValue(
+                verb_slot.placeholder, verb_slot.base_type, [token_data]
+            )
             updated_slots = _store_capture(base_slots, capture, verb_slot.aliases)
             if updated_slots is None:
                 continue
-            populated = _populate_dependency_roles(token, rule.dependency, updated_slots, token_lookup)
+            populated = _populate_dependency_roles(
+                token, rule.dependency, updated_slots, token_lookup
+            )
             if populated is not None:
                 return populated
     return None
@@ -172,14 +181,20 @@ def _populate_dependency_roles(
     return result
 
 
-def try_match(tokens: Sequence[TokenData], pattern: Sequence[PatternElement]) -> Optional[Dict[str, CapturedValue]]:
-    def backtrack(token_idx: int, pattern_idx: int, slots: Dict[str, CapturedValue]) -> Optional[Dict[str, CapturedValue]]:
+def try_match(
+    tokens: Sequence[TokenData], pattern: Sequence[PatternElement]
+) -> Optional[Dict[str, CapturedValue]]:
+    def backtrack(
+        token_idx: int, pattern_idx: int, slots: Dict[str, CapturedValue]
+    ) -> Optional[Dict[str, CapturedValue]]:
         if pattern_idx == len(pattern):
             return slots if token_idx == len(tokens) else None
 
         element = pattern[pattern_idx]
 
-        match_result = _attempt_element_match(tokens, token_idx, pattern_idx, slots, element, backtrack)
+        match_result = _attempt_element_match(
+            tokens, token_idx, pattern_idx, slots, element, backtrack
+        )
         if match_result is not None:
             return match_result
 
@@ -221,7 +236,11 @@ def _attempt_element_match(
     if element.kind == "placeholder":
         matches = _collect_placeholder_matches(tokens, token_idx, element)
         for consumed, capture_tokens in matches:
-            capture = CapturedValue(element.placeholder or element.raw, element.base_type or "", capture_tokens)
+            capture = CapturedValue(
+                element.placeholder or element.raw,
+                element.base_type or "",
+                capture_tokens,
+            )
             updated_slots = _store_capture(slots, capture, element.aliases)
             if updated_slots is None:
                 continue
@@ -277,7 +296,9 @@ def _store_capture(
     return result
 
 
-def _find_dependency_tokens(verb_token, slot: DependencySlot, lookup: Dict[int, TokenData]) -> List[TokenData]:
+def _find_dependency_tokens(
+    verb_token, slot: DependencySlot, lookup: Dict[int, TokenData]
+) -> List[TokenData]:
     for child in verb_token.children:
         if child.dep_ not in slot.deps:
             continue
@@ -334,7 +355,9 @@ def _compile_rule(rule: Dict, index: int) -> CompiledRule:
     dependency_slots = _parse_dependency_spec(dependency_spec, registry)
 
     literal_count = sum(1 for element in pattern_elements if element.kind == "literal")
-    placeholder_count = sum(1 for element in pattern_elements if element.kind == "placeholder")
+    placeholder_count = sum(
+        1 for element in pattern_elements if element.kind == "placeholder"
+    )
     optional_count = sum(1 for element in pattern_elements if element.optional)
     length = len(pattern_elements)
     specificity = (literal_count, placeholder_count, -optional_count, -length)
@@ -358,7 +381,9 @@ def _parse_pattern_token(token: str, registry: PlaceholderRegistry) -> PatternEl
         raw = raw[:-1]
 
     if raw == "_":
-        return PatternElement(raw=token, kind="wildcard", optional=optional, multi=multi)
+        return PatternElement(
+            raw=token, kind="wildcard", optional=optional, multi=multi
+        )
 
     if raw.startswith("/"):
         base, explicit = _split_placeholder(raw)
@@ -403,7 +428,9 @@ def _parse_pattern_token(token: str, registry: PlaceholderRegistry) -> PatternEl
     )
 
 
-def _parse_dependency_spec(spec: Dict, registry: PlaceholderRegistry) -> List[DependencySlot]:
+def _parse_dependency_spec(
+    spec: Dict, registry: PlaceholderRegistry
+) -> List[DependencySlot]:
     if not isinstance(spec, dict):
         return []
     slots: List[DependencySlot] = []

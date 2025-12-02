@@ -18,8 +18,8 @@ Usage:
 from __future__ import annotations
 import argparse
 import sys
-from common.translator import translate_sentence
-from common.kb import kb
+from translator import translate_sentence
+from knowledge_base import kb
 
 
 def cmd_add(sentence: str):

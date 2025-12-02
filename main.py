@@ -9,22 +9,22 @@ Usage:
 from __future__ import annotations
 import argparse
 
-from common.translator import translate_sentence
+from translator import translate_sentence
 from method_lark.validator import validate as validate_lark
 from method_nltk.validator import validate as validate_nltk
 from method_fomaster.validator import validate as validate_fomaster
 
 
 METHODS = {
-    'lark': lambda fol: validate_lark(fol),
-    'nltk': lambda fol: validate_nltk(fol),
-    'fomaster': lambda fol: validate_fomaster(fol),
+    "lark": lambda fol: validate_lark(fol),
+    "nltk": lambda fol: validate_nltk(fol),
+    "fomaster": lambda fol: validate_fomaster(fol),
 }
 
 
 def run(sentence: str, method: str | None, all_methods: bool):
     fol = translate_sentence(sentence)
-    if fol.startswith('[ERROR]'):
+    if fol.startswith("[ERROR]"):
         print(f"NL: {sentence}\nERROR: {fol}\n")
         return
     print(f"NL: {sentence}")
@@ -33,7 +33,7 @@ def run(sentence: str, method: str | None, all_methods: bool):
         for name, fn in METHODS.items():
             print(f"  {name}: {fn(fol)}")
     else:
-        fn = METHODS.get(method or '')
+        fn = METHODS.get(method or "")
         if fn is None:
             print(f"Unknown method: {method}")
         else:
@@ -42,13 +42,18 @@ def run(sentence: str, method: str | None, all_methods: bool):
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Common NL→FOL translator with multiple validators.')
-    ap.add_argument('sentence', nargs='+', help='Input sentence(s)')
-    ap.add_argument('--method', choices=METHODS.keys(), help='Single method to validate')
-    ap.add_argument('--all', action='store_true', help='Run all methods')
+    ap = argparse.ArgumentParser(
+        description="Common NL→FOL translator with multiple validators."
+    )
+    ap.add_argument("sentence", nargs="+", help="Input sentence(s)")
+    ap.add_argument(
+        "--method", choices=METHODS.keys(), help="Single method to validate"
+    )
+    ap.add_argument("--all", action="store_true", help="Run all methods")
     args = ap.parse_args()
     for s in args.sentence:
         run(s, args.method, args.all)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
