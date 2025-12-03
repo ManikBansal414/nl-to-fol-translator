@@ -1,10 +1,10 @@
 {
-  "facts": [],
-  "rules": [],
-  "other_formulas": [
-    "Friend(Socrates)",
-    "forall x. (Friend(x) -> Toxic(x))",
-    "forall x. (Friend(x) -> Toxic(x))",
-    "exists x. exists y. (Picasso(x) & Friend(y) & Be(x, y))"
-  ]
+  "facts": [
+    "Greek(Socrates)"
+  ],
+  "rules": [
+    "forall x. (Human(x) -> Mortal(x))",
+    "forall x. (Greek(x) -> Human(x))"
+  ],
+  "other_formulas": []
 }

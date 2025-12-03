@@ -24,7 +24,6 @@ benchmarks/        # Dataset loaders, LLM harnesses, metrics
 method_lark/       # Lark validator wrapper
 method_nltk/       # NLTK LogicParser validator
 method_fomaster/   # Lightweight validator using common notation
-GUI/               # Flask UI for translator + KB
 main.py            # Command-line interface
 requirements.txt   # Python dependencies
 ```
@@ -122,41 +121,20 @@ python main.py --all "All humans are mortal" "Some dogs are animals"
 
 For clarification or enhancements, add issues or extend validators. Keep rule additions incremental.
 
-## 12. Web GUI & Knowledge Base
+## 12. Knowledge Base & Prover
 
-An optional Flask-based GUI is provided in the `GUI/` folder for interactive translation, validation, and simple knowledge base (KB) management.
+The project includes a Knowledge Base (KB) and a Natural Deduction Prover, accessible via CLI tools.
 
-### 12.1 Setup (GUI)
+### 12.1 Knowledge Base (CLI)
 
-Install Flask alongside the existing dependencies (activate your venv first):
+Use `kb_cli.py` to manage facts and rules.
 
-```bash
-pip install -r GUI/requirements.txt
-python -m spacy download en_core_web_sm
-```
+- Add: `python kb_cli.py add "All humans are mortal"`
+- Query: `python kb_cli.py query "Is Socrates mortal?"`
+- List: `python kb_cli.py list`
+- Clear: `python kb_cli.py clear`
 
-### 12.2 Run GUI
-
-```bash
-python GUI/app.py
-# open http://localhost:5000
-```
-
-### 12.3 GUI Features
-
-- Translate & Validate: Produces FOL and shows validator results (lark / nltk / fomaster / all).
-- Add to KB: Accepts:
-  - Unary facts: `P(Const)`
-  - Universal rules with conjunctive sides over one variable: e.g., `forall x. (P(x) & Q(x) -> R(x) & S(x))`
-  - Existential facts: `exists x. P(x)` or `exists x. (P(x) & Q(x))` (introduces a witness constant internally)
-- Query KB:
-  - Unary fact: `P(Const)` with a forward-chaining derivation trace
-  - Existential: `exists x. P(x)` / `exists x. (P(x) & Q(x))` succeeds if a witness constant exists in closure
-  - Universal membership: `forall x. (... -> ...)` checks if an equivalent rule is present
-- Clear KB: Empties facts and rules (persisted in `kb_store.json`).
-- KB State Panel: Displays current facts and rules after each action.
-
-### 12.4 KB Limitations
+### 12.2 KB Limitations
 
 The KB remains intentionally restricted for predictability and performance:
 
@@ -166,7 +144,9 @@ The KB remains intentionally restricted for predictability and performance:
 - Existentials are handled by witness introduction during `add`, not by general Skolem functions.
 - Constants come from translator formatting (proper nouns maintained as constants).
 
-### 12.5 Natural Deduction Proof (Prover)
+### 12.3 Natural Deduction Proof (Prover)
+
+Use `proof_cli.py` for interactive proofs.
 
 - Premises: enter one FOL formula per line (same syntax as validators).
 - Commands:
@@ -195,23 +175,5 @@ AE 0 Socrates
 Finish
 ```
 
-### 12.6 Example Workflow (KB)
 
-1. Add rule: "All humans are mortal" → `forall x. (Human(x) -> Mortal(x))` (stored as rule `Human -> Mortal`).
-2. Add fact: "Socrates is human" → `Human(Socrate)`.
-3. Query: "Socrates is mortal" → entailed True with trace showing the derivation.
-
-### 12.7 Extending the GUI
-
-Ideas for extension:
-
-- Support batch premise input (multi-line add).
-- Add deletion of individual facts/rules.
-- Integrate more expressive inference (binary predicates, transitivity, equality).
-- Provide an API endpoint (JSON) for programmatic use.
-
-### 12.8 Troubleshooting (GUI)
-
-- Port already in use: run with `PORT=5050 python GUI/app.py`.
-- Missing model: ensure `python -m spacy download en_core_web_sm` ran in the active environment.
-- No derivation found: verify the query matches an entailed fact pattern and that a connecting rule chain exists.
+FOL resolution master is a tool for resolution of 
