@@ -217,7 +217,16 @@ def _attempt_element_match(
         if token_idx >= len(tokens):
             return None
         token = tokens[token_idx]
-        if token.lemma != element.value and token.text.lower() != (element.value or ""):
+        
+        # Support OR in literals (e.g. "all|every|each")
+        options = (element.value or "").split("|")
+        match = False
+        for opt in options:
+            if token.lemma == opt or token.text.lower() == opt:
+                match = True
+                break
+        
+        if not match:
             return None
         return backtrack_fn(token_idx + 1, pattern_idx + 1, slots)
 

@@ -1,3 +1,59 @@
+- name: "all-noun-aux-not-adj"
+  pattern: ["all", "NOUN", "AUX", "not", "ADJ"]
+  template: "forall x. (/NOUN(x) -> not /ADJ(x))"
+
+- name: "all-noun-aux-not-noun"
+  pattern: ["all", "NOUN", "AUX", "not", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> not /NOUN_2(x))"
+
+- name: "every-noun-aux-not-adj"
+  pattern: ["every", "NOUN", "AUX", "not", "ADJ"]
+  template: "forall x. (/NOUN(x) -> not /ADJ(x))"
+
+- name: "every-noun-aux-not-noun"
+  pattern: ["every", "NOUN", "AUX", "not", "NOUN"]
+  template: "forall x. (/NOUN_1(x) -> not /NOUN_2(x))"
+
+- name: "not-all-noun-aux-adj"
+  pattern: ["not", "all", "NOUN", "AUX", "ADJ"]
+  template: "forall x. (/NOUN(x) -> not /ADJ(x))"
+
+- name: "propn-is-literal-a-noun"
+  pattern: ["PROPN", "is", "a", "NOUN"]
+  template: "/NOUN(/PROPN)"
+
+- name: "propn-is-literal-noun"
+  pattern: ["PROPN", "is", "NOUN"]
+  template: "/NOUN(/PROPN)"
+
+- name: "propn-verb-intransitive"
+  pattern: ["PROPN", "VERB"]
+  template: "/VERB(/PROPN)"
+
+- name: "all-propn-aux-propn"
+  pattern: ["all", "PROPN", "AUX", "PROPN"]
+  template: "forall x. (/PROPN_1(x) -> /PROPN_2(x))"
+
+- name: "noun-is-propn"
+  pattern: ["NOUN", "AUX", "PROPN"]
+  template: "/PROPN(/NOUN)"
+
+- name: "propn-is-propn"
+  pattern: ["PROPN", "AUX", "PROPN"]
+  template: "/PROPN_2(/PROPN_1)"
+
+- name: "not-all-noun-aux-noun"
+  pattern: ["not", "all", "NOUN", "AUX", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & not /NOUN_2(x))"
+
+- name: "not-every-noun-aux-adj"
+  pattern: ["not", "every", "NOUN", "AUX", "ADJ"]
+  template: "exists x. (/NOUN(x) & not /ADJ(x))"
+
+- name: "not-every-noun-aux-noun"
+  pattern: ["not", "every", "NOUN", "AUX", "NOUN"]
+  template: "exists x. (/NOUN_1(x) & not /NOUN_2(x))"
+
 - name: "all-noun-aux-adj"
   pattern: ["all", "NOUN", "AUX", "ADJ"]
   template: "forall x. (/NOUN(x) -> /ADJ(x))"
@@ -70,6 +126,14 @@
   pattern: ["there", "VERB", "DET", "NOUN"]
   template: "exists x. (/NOUN(x))"
 
+- name: "propn-aux-not-adj"
+  pattern: ["PROPN", "AUX", "not", "ADJ"]
+  template: "not /ADJ(/PROPN)"
+
+- name: "propn-aux-not-noun"
+  pattern: ["PROPN", "AUX", "not", "DET?", "NOUN"]
+  template: "not /NOUN(/PROPN)"
+
 - name: "propn-aux-adj"
   pattern: ["PROPN", "AUX", "ADJ"]
   template: "/ADJ(/PROPN)"
@@ -86,6 +150,18 @@
   pattern: ["PROPN", "AUX", "NOUN"]
   template: "/NOUN(/PROPN)"
 
+- name: "propn-who-aux-adj-aux-adj"
+  pattern: ["PROPN", "who", "AUX", "ADJ", "AUX", "ADJ"]
+  template: "(/ADJ_1(/PROPN) & /ADJ_2(/PROPN))"
+
+- name: "propn-who-aux-adj-aux-noun"
+  pattern: ["PROPN", "who", "AUX", "ADJ", "AUX", "NOUN"]
+  template: "(/ADJ(/PROPN) & /NOUN(/PROPN))"
+
+- name: "propn-who-aux-adj-is-adj"
+  pattern: ["PROPN", "who", "AUX", "ADJ", "is", "ADJ"]
+  template: "(/ADJ_1(/PROPN) & /ADJ_2(/PROPN))"
+
 - name: "noun-aux-adj"
   pattern: ["NOUN", "AUX", "ADJ"]
   template: "/ADJ(/NOUN)"
@@ -97,6 +173,14 @@
 - name: "noun-verb-adj"
   pattern: ["NOUN", "VERB", "ADJ"]
   template: "/ADJ(/NOUN)"
+
+- name: "all-noun-aux-verb"
+  pattern: ["all", "NOUN", "AUX", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
+
+- name: "every-noun-aux-verb"
+  pattern: ["every", "NOUN", "AUX", "VERB"]
+  template: "forall x. (/NOUN(x) -> /VERB(x))"
 
 - name: "all-noun-verb"
   pattern: ["all", "NOUN", "VERB"]
@@ -141,6 +225,26 @@
 - name: "noun-verb-noun"
   pattern: ["NOUN", "VERB", "DET?", "NOUN"]
   template: "exists x. exists y. (/NOUN_1(x) & /NOUN_2(y) & /VERB(x, y))"
+
+- name: "propn-aux-not-verb"
+  pattern: ["PROPN", "AUX", "not", "VERB"]
+  template: "not /VERB(/PROPN)"
+
+- name: "propn-aux-not-verb-noun"
+  pattern: ["PROPN", "AUX", "not", "VERB", "DET?", "NOUN"]
+  template: "not /VERB(/PROPN, /NOUN)"
+
+- name: "propn-does-not-verb"
+  pattern: ["PROPN", "does", "not", "VERB"]
+  template: "not /VERB(/PROPN)"
+
+- name: "propn-does-not-verb-noun"
+  pattern: ["PROPN", "does", "not", "VERB", "DET?", "NOUN"]
+  template: "not /VERB(/PROPN, /NOUN)"
+
+- name: "propn-verb-a-noun"
+  pattern: ["PROPN", "VERB", "a", "NOUN"]
+  template: "exists x. (/NOUN(x) & /VERB(/PROPN, x))"
 
 - name: "propn-verb-noun"
   pattern: ["PROPN", "VERB", "DET?", "NOUN"]

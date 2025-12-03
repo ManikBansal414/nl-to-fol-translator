@@ -7,4 +7,4 @@ google-generativeai>=0.7.0
 python-dotenv>=1.0.1
 tqdm>=4.66.1
 zss>=1.2.0
-Set-Location -Path "X:\Games\IIIT\cl\CL2-NLxFOL-parser-and-reasoning-module"
+pyDatalog

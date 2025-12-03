@@ -140,9 +140,9 @@ def main():
         full_sentence = " ".join(args.sentence).strip()
 
     if args.action == "add":
-        cmd_add(full_sentence)
+        cmd_add(full_sentence) # type: ignore
     elif args.action == "query":
-        cmd_query(full_sentence)
+        cmd_query(full_sentence) # type: ignore
     elif args.action == "list":
         cmd_list()
     elif args.action == "clear":
